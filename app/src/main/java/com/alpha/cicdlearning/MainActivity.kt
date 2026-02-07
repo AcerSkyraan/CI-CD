@@ -20,10 +20,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             CICDLearningTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "CI/CD Learning",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+//                    PillDragAnimation()
+//                    SimpleTwoBoxExample()
+//                    SimpleTwoBoxExample()
+                    MixedLayoutExample()
                 }
             }
         }
