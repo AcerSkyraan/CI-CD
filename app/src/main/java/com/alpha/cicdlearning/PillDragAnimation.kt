@@ -2,11 +2,14 @@ package com.alpha.cicdlearning
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +17,11 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,14 +45,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.fontscaling.MathUtils.lerp
 import androidx.compose.ui.unit.times
@@ -642,3 +658,455 @@ fun PillDragAnimation4(modifier: Modifier = Modifier) {
         }
     }
 }
+
+
+@Composable
+fun MorphDragContainer0(
+    modifier: Modifier = Modifier,
+
+    // Sizes
+    startWidth: Dp = 180.dp,
+    endWidth: Dp = 360.dp,
+    startHeight: Dp = 56.dp,
+    endHeight: Dp,
+
+    // Corners
+    startCorner: Dp = 36.dp,
+    endCorner: Dp = 24.dp,
+
+    // Colors
+    backgroundColor: Color = Color.White,
+    screenBackground: Color = Color.Black,
+
+    // Behavior
+    dragSensitivity: Float = 800f,
+    snapDuration: Int = 500,
+
+    // Alignment
+    alignment: Alignment = Alignment.TopCenter,
+    padding: PaddingValues = PaddingValues(top = 24.dp),
+
+    // Content inside container
+    content: @Composable BoxScope.(progress: Float) -> Unit = {}
+) {
+
+    val scope = rememberCoroutineScope()
+    val progress = remember { Animatable(0f) }
+
+    val density = LocalDensity.current
+
+    fun lerpDp(start: Dp, end: Dp, fraction: Float): Dp {
+        return start + (end - start) * fraction
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(screenBackground)
+    ) {
+
+        val width = lerpDp(startWidth, endWidth, progress.value)
+        val height = lerpDp(startHeight, endHeight, progress.value)
+        val corner = lerpDp(startCorner, endCorner, progress.value)
+
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .align(alignment)
+                .width(width)
+                .height(height)
+                .clip(RoundedCornerShape(corner))
+                .background(backgroundColor)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onVerticalDrag = { _, dragAmount ->
+                            val delta = with(density) {
+                                dragAmount / dragSensitivity
+                            }
+                            val newValue =
+                                (progress.value + delta).coerceIn(0f, 1f)
+
+                            scope.launch { progress.snapTo(newValue) }
+                        },
+                        onDragEnd = {
+                            scope.launch {
+                                val target =
+                                    if (progress.value > 0.5f) 1f else 0f
+                                progress.animateTo(
+                                    target,
+                                    animationSpec = tween(snapDuration)
+                                )
+                            }
+                        }
+                    )
+                }
+        ) {
+            content(progress.value)
+        }
+    }
+}
+
+
+@Composable
+fun MorphDragContainer1(
+    modifier: Modifier = Modifier,
+
+    // Sizes
+    startWidth: Dp = 180.dp,
+    endWidth: Dp = 360.dp,
+    startHeight: Dp = 56.dp,
+    endHeight: Dp,
+
+    // Corners
+    startCorner: Dp = 36.dp,
+    endCorner: Dp = 24.dp,
+
+    // Colors
+    backgroundColor: Color = Color.White,
+    screenBackground: Color = Color.Black,
+
+    // Behavior
+    dragSensitivity: Float = 800f,
+
+    // Animation
+    snapAnimationSpec: AnimationSpec<Float> = tween(500),
+
+    // Layout
+    alignment: Alignment = Alignment.TopCenter,
+    padding: PaddingValues = PaddingValues(top = 24.dp),
+
+    content: @Composable BoxScope.(progress: Float) -> Unit = {}
+) {
+
+    val scope = rememberCoroutineScope()
+    val progress = remember { Animatable(0f) }
+    val density = LocalDensity.current
+
+    fun lerpDp(start: Dp, end: Dp, fraction: Float): Dp {
+        return start + (end - start) * fraction
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(screenBackground)
+    ) {
+
+        val width = lerpDp(startWidth, endWidth, progress.value)
+        val height = lerpDp(startHeight, endHeight, progress.value)
+        val corner = lerpDp(startCorner, endCorner, progress.value)
+
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .align(alignment)
+                .width(width)
+                .height(height)
+                .clip(RoundedCornerShape(corner))
+                .background(backgroundColor)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onVerticalDrag = { _, dragAmount ->
+                            val delta = with(density) {
+                                dragAmount / dragSensitivity
+                            }
+                            val newValue =
+                                (progress.value + delta).coerceIn(0f, 1f)
+
+                            scope.launch { progress.snapTo(newValue) }
+                        },
+                        onDragEnd = {
+                            scope.launch {
+                                val target =
+                                    if (progress.value > 0.5f) 1f else 0f
+                                progress.animateTo(
+                                    target,
+                                    animationSpec = snapAnimationSpec
+                                )
+                            }
+                        }
+                    )
+                }
+        ) {
+            content(progress.value)
+        }
+    }
+}
+
+
+
+
+@Composable
+fun MorphDragContainer(
+    modifier: Modifier = Modifier,
+
+    startWidth: Dp = 180.dp,
+    endWidth: Dp = 360.dp,
+    startHeight: Dp = 56.dp,
+    endHeight: Dp,
+
+    startCorner: Dp = 36.dp,
+    endCorner: Dp = 24.dp,
+
+    containerColor: Color = Color.White,
+
+    content: @Composable BoxScope.(progress: Float) -> Unit = {}
+) {
+    val scope = rememberCoroutineScope()
+    val progress = remember { Animatable(0f) }
+
+    val decay = rememberSplineBasedDecay<Float>()
+    val density = LocalDensity.current
+
+    fun lerpDp(start: Dp, end: Dp, fraction: Float): Dp {
+        return start + (end - start) * fraction
+    }
+
+    Box(modifier.fillMaxSize()) {
+
+        val width = lerpDp(startWidth, endWidth, progress.value)
+        val height = lerpDp(startHeight, endHeight, progress.value)
+        val corner = lerpDp(startCorner, endCorner, progress.value)
+
+        Box(
+            modifier = modifier
+                .width(width)
+                .height(height)
+                .clip(RoundedCornerShape(corner))
+                .background(containerColor)
+                .pointerInput(Unit) {
+
+                    val velocityTracker = VelocityTracker()
+
+                    detectVerticalDragGestures(
+                        onDragStart = { velocityTracker.resetTracking() },
+
+                        onVerticalDrag = { change, dragAmount ->
+                            velocityTracker.addPosition(
+                                change.uptimeMillis,
+                                change.position
+                            )
+
+                            val delta = dragAmount / 900f
+                            val newValue =
+                                (progress.value + delta).coerceIn(0f, 1f)
+
+                            scope.launch { progress.snapTo(newValue) }
+                        },
+
+                        onDragEnd = {
+                            val velocity =
+                                velocityTracker.calculateVelocity().y / 4000f
+
+                            scope.launch {
+
+                                progress.animateDecay(
+                                    initialVelocity = velocity,
+                                    animationSpec = decay
+                                )
+
+                                val target =
+                                    if (progress.value > 0.5f) 1f else 0f
+
+                                progress.animateTo(
+                                    target,
+                                    animationSpec = spring(
+                                        dampingRatio =
+                                            Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+        ) {
+            content(progress.value)
+        }
+    }
+}
+
+
+
+@Composable
+fun WaveReveal(
+    modifier: Modifier = Modifier,
+    trigger: Boolean,
+    origin: Offset,
+    color: Color,
+    duration: Int = 900,
+    reverseDuration: Int = 700,
+    background: @Composable BoxScope.() -> Unit = {},
+    content: @Composable BoxScope.() -> Unit
+) {
+    val density = LocalDensity.current
+    val config = LocalConfiguration.current
+
+    val radius = remember { Animatable(0f) }
+
+    val maxRadius = with(density) {
+        sqrt(
+            config.screenWidthDp.dp.toPx().pow(2) +
+                    config.screenHeightDp.dp.toPx().pow(2)
+        )
+    }
+
+    LaunchedEffect(trigger) {
+        if (trigger) {
+            radius.animateTo(maxRadius, tween(duration))
+        } else {
+            radius.animateTo(0f, tween(reverseDuration))
+        }
+    }
+
+    Box(modifier.fillMaxSize()) {
+
+        // BASE BACKGROUND
+        background()
+
+        // -------- WAVE COLOR LAYER --------
+        Canvas(Modifier.matchParentSize()) {
+            if (radius.value > 1f) {
+                drawCircle(
+                    color = color,
+                    radius = radius.value,
+                    center = origin
+                )
+            }
+        }
+
+        // -------- CLIPPED CONTENT --------
+        Box(
+            Modifier
+                .matchParentSize()
+                .graphicsLayer {
+                    clip = true
+                    shape = object : Shape {
+                        override fun createOutline(
+                            size: Size,
+                            layoutDirection: LayoutDirection,
+                            density: Density
+                        ): Outline {
+                            return Outline.Generic(
+                                Path().apply {
+                                    addOval(
+                                        Rect(
+                                            center = origin,
+                                            radius = radius.value
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+        ) {
+            content()
+        }
+    }
+}
+
+
+
+
+
+
+
+@SuppressLint("ConfigurationScreenWidthHeight")
+@Composable
+fun DemoScreen() {
+
+    val density = LocalDensity.current
+    val config = LocalConfiguration.current
+
+    var openMenu by remember { mutableStateOf(false) }
+
+    val origin = with(density) {
+        Offset(44.dp.toPx(), 44.dp.toPx())
+    }
+
+    Box(Modifier.fillMaxSize()){
+
+
+
+
+
+        // -------- MENU BUTTON --------
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color.Cyan)
+                .clickable { openMenu = true }
+        )
+
+        // -------- NOTIFICATION --------
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color.Green)
+        )
+
+
+        MorphDragContainer(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 24.dp)
+            , containerColor = Color.Red,
+            endHeight = config.screenHeightDp.dp * 0.9f
+        ) { progress ->
+
+            Text(
+                text = if (progress < 0.5f) "Pill" else "Expanded",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.Black
+            )
+        }
+
+        WaveReveal(
+            trigger = openMenu,
+            origin = origin,
+            color = Color.Gray,
+        )
+        {
+            if (openMenu) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = 120.dp, start = 24.dp)
+                )
+                {
+
+                    Text("Menu Screen", color = Color.Black)
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Text("Profile", color = Color.Black)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Settings", color = Color.Black)
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Text(
+                        "Close",
+                        modifier = Modifier
+                            .clickable {
+                                openMenu = false
+                            },
+                        color = Color.Blue
+                    )
+                }
+            }
+
+        }
+
+    }
+}
+
+
+

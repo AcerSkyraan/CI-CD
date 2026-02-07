@@ -23,7 +23,8 @@ class MainActivity : ComponentActivity() {
 //                    PillDragAnimation()
 //                    SimpleTwoBoxExample()
 //                    SimpleTwoBoxExample()
-                    MixedLayoutExample()
+//                    MixedLayoutExample()
+                    DemoScreen()
                 }
             }
         }
