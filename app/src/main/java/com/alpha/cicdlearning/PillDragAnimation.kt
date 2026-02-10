@@ -1,6 +1,7 @@
 package com.alpha.cicdlearning
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -55,7 +56,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -64,6 +67,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.fontscaling.MathUtils.lerp
 import androidx.compose.ui.unit.times
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.pow
@@ -1016,6 +1027,10 @@ fun WaveReveal(
 @Composable
 fun DemoScreen() {
 
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.foresttlottie))
+
+
     val density = LocalDensity.current
     val config = LocalConfiguration.current
 
@@ -1025,17 +1040,18 @@ fun DemoScreen() {
         Offset(44.dp.toPx(), 44.dp.toPx())
     }
 
-    Box(Modifier.fillMaxSize()){
-
-
-
+    Box(
+        Modifier
+            .padding(top = 24.dp)
+            .fillMaxSize()
+    ){
 
 
         // -------- MENU BUTTON --------
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(16.dp)
+                .padding(start = 16.dp)
                 .size(56.dp)
                 .clip(CircleShape)
                 .background(Color.Cyan)
@@ -1046,7 +1062,7 @@ fun DemoScreen() {
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp)
+                .padding(end = 16.dp)
                 .size(56.dp)
                 .clip(CircleShape)
                 .background(Color.Green)
@@ -1056,7 +1072,7 @@ fun DemoScreen() {
         MorphDragContainer(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 24.dp)
+                //.padding(top = 24.dp)
             , containerColor = Color.Red,
             endHeight = config.screenHeightDp.dp * 0.9f
         ) { progress ->
@@ -1075,31 +1091,44 @@ fun DemoScreen() {
         )
         {
             if (openMenu) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 120.dp, start = 24.dp)
-                )
-                {
+                Box() {
 
-                    Text("Menu Screen", color = Color.Black)
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Text("Profile", color = Color.Black)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Settings", color = Color.Black)
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Text(
-                        "Close",
+                    LottieAnimation(
+                        composition = composition,
+                        iterations = LottieConstants.IterateForever,
                         modifier = Modifier
-                            .clickable {
-                                openMenu = false
-                            },
-                        color = Color.Blue
+
+                            .matchParentSize().fillMaxSize(),   // fills parent Box
+                        contentScale = ContentScale.FillBounds, // VERY IMPORTANT
                     )
+
+
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 120.dp, start = 24.dp)
+                    )
+                    {
+
+                        Text("Menu Screen", color = Color.Black)
+
+                        Spacer(Modifier.height(24.dp))
+
+                        Text("Profile", color = Color.Black)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Settings", color = Color.Black)
+
+                        Spacer(Modifier.height(24.dp))
+
+                        Text(
+                            "Close",
+                            modifier = Modifier
+                                .clickable {
+                                    openMenu = false
+                                },
+                            color = Color.Blue
+                        )
+                    }
                 }
             }
 
@@ -1107,6 +1136,9 @@ fun DemoScreen() {
 
     }
 }
+
+
+
 
 
 
