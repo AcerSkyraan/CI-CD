@@ -18,6 +18,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
     }
 
     buildTypes {
@@ -39,6 +44,12 @@ android {
     buildFeatures {
         compose = true
     }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 }
 
 dependencies {
@@ -51,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.object1.detection)
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,6 +97,15 @@ dependencies {
     implementation("com.google.mlkit:object-detection:17.0.2")
     implementation("com.google.mlkit:object-detection-common:17.0.6")
 
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.1")
+
+
+    // REMOVE the old line:
+    // implementation("io.github.sceneview:sceneview-compose:2.0.3")
+
+    // ADD this instead (latest version):
+    implementation("io.github.sceneview:sceneview:2.3.3")
 
 
 }

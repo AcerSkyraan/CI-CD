@@ -19,16 +19,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+//import com.alpha.cicdlearning.Game2048.domain.Game2048
 import com.alpha.cicdlearning.KidsColoring.Basic.ColoringScreen
 import com.alpha.cicdlearning.MemoryCardMatchGame.ui.MemoryGameScreen
+import com.alpha.cicdlearning.MemoryLaneNaver.domain.MazeGameScreen
 import com.alpha.cicdlearning.ObjectDetection.ObjectDetectionScreen
 import com.alpha.cicdlearning.SnakeGame.ui.SnakeGame
-import com.alpha.cicdlearning.flappybird.FlappyBirdGame
+import com.alpha.cicdlearning.SomethingGlassy.BookMagnifierScreen
+import com.alpha.cicdlearning.SomethingGlassy.Draggable3DCard
+import com.alpha.cicdlearning.SomethingGlassy.LensClickScreen
+import com.alpha.cicdlearning.SomethingGlassy.MagnifierPlayground
+import com.alpha.cicdlearning.SomethingGlassy.Model3DScreen
+
+import com.alpha.cicdlearning.SomethingGlassy.ReflectionSingleDemo
+import com.alpha.cicdlearning.SomethingGlassy.ReflectivePlayground
 import com.alpha.cicdlearning.objectLabeling.ImageLabelScreen
 import com.alpha.cicdlearning.objectLabeling.LiveLabelScreen
 import com.alpha.cicdlearning.objectLabeling.MlImageLabelingScreen
 import com.alpha.cicdlearning.pong.PongGame
+import com.alpha.cicdlearning.simonsays.SimonSaysGame
+import com.alpha.cicdlearning.tetris.TetrisGame
 import com.alpha.cicdlearning.ui.theme.CICDLearningTheme
+import com.alpha.cicdlearning.whackamole.WhackAMoleGame
+import com.example.pacman.PacManGame
 
 
 fun setSystemUIVisibility(hide: Boolean, mainActivity: MainActivity) {
@@ -47,6 +60,14 @@ fun setSystemUIVisibility(hide: Boolean, mainActivity: MainActivity) {
 }
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+              init {
+         System.loadLibrary("cicdlearning")
+      }
+
+        external fun gyuhj(): String
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -85,8 +106,27 @@ class MainActivity : ComponentActivity() {
                     // MemoryGameScreen()
 
                     //PongGame()
-                    FlappyBirdGame()
+//                    FlappyBirdGame()
+//                    TetrisGame()
+//                    Game2048()
+                    //WhackAMoleGame()
+                    //SimonSaysGame()
+                   // MazeGameScreen()
+                    //PacManGame()
+                   // GlaasyScreen()
+                    //ReflectionSingleDemo()
+                    //Draggable3DCard()
+                    //GlaasyScreen()
+                    //EmojiLensScreen()
+//                    MovingLensScreen()
+                    //LensClickScreen()
+                    //MagnifierPlayground()
+                    //ReflectivePlayground()
+                    //BookMagnifierScreen()
+
+                    Model3DScreen()
                 }
+
 
 
             }
